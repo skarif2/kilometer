@@ -1,17 +1,36 @@
 const express = require('express')
+const bodyParser = require('body-parser')
+const compress = require('compression')
+const helmet = require('helmet')
+const cors = require('cors')
+const mongoose = require('mongoose')
+const serviceRoutes = require('./services/service.route')
+
 const app = express()
 const port = 3000
+const mongoUri = 'mongodb://localhost/kilometer'
 
-app.get('/kilometer/services/state', (req, res) => res.send('/kilometer/services/state'))
+mongoose.connect(mongoUri, { server: { socketOptions: { keepAlive: 1 } } });
+mongoose.connection.on('error', () => {
+  throw new Error(`unable to connect to database: ${mongoUri}`);
+});
 
-app.get('/kilometer/services/estimation', (req, res) => res.send('/kilometer/services/estimation'))
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true }))
 
-app.get('/kilometer/services/trips', (req, res) => res.send('/kilometer/services/trips'))
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*')
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
+  res.header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+  res.header('X-powered-by', 'Scala')
+  res.header('Access-Control-Max-Age', '1000')
+  next()
+})
 
-app.post('/kilometer/services/trips', (req, res) => res.send('/kilometer/services/trips'))
+app.use(compress())
+app.use(helmet())
+app.use(cors())
 
-app.put('/kilometer/services/trips/:tripId', (req, res) => res.send('/kilometer/services/trips'))
-
-app.delete('/kilometer/services/trips/:tripId', (req, res) => res.send('/kilometer/services/trips'))
+app.use('/kilometer/services', serviceRoutes)
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
