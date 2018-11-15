@@ -1,3 +1,8 @@
+const Promise = require('bluebird')
+const MapsClient = require('@google/maps').createClient({
+  key: 'AIzaSyDk70yhTWcTzS6Jz3kQfqBa4u3z2j-KfJM',
+  Promise: Promise
+});
 const TripModel = require('./service.model')
 
 function loadTrip(req, res, next, id) {
@@ -18,10 +23,22 @@ function getState(req, res) {
 }
 
 function getEstimation(req, res) {
-  res.json({
-    state: 'Good estimation',
-    body: req.body
-  })
+  MapsClient.distanceMatrix({ origins: req.body.from, destinations: req.body.to })
+    .asPromise()
+    .then((response) => {
+      console.log(response.json);
+      return res.json({
+        state: 'Good estimation',
+        body: response.json
+      })
+    })
+    .catch((err) => {
+      console.log(err);res.json({
+        state: 'Good estimation',
+        err
+      })
+    });
+  
 }
 
 function createTrip(req, res) {

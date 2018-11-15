@@ -4,7 +4,8 @@ const compress = require('compression')
 const helmet = require('helmet')
 const cors = require('cors')
 const mongoose = require('mongoose')
-const serviceRoutes = require('./services/service.route')
+const serviceRoutes = require('./server/services/service.route')
+const settingRoutes = require('./server/settings/settings.route')
 
 const app = express()
 const port = 3000
@@ -32,5 +33,6 @@ app.use(helmet())
 app.use(cors())
 
 app.use('/kilometer/services', serviceRoutes)
+app.use('/kilometer/settings', settingRoutes)
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
