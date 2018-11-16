@@ -11,6 +11,7 @@ const app = express()
 const port = 3000
 const mongoUri = 'mongodb://localhost/kilometer'
 
+mongoose.set('useCreateIndex', true)
 mongoose.connect(mongoUri, { server: { socketOptions: { keepAlive: 1 } } });
 mongoose.connection.on('error', () => {
   throw new Error(`unable to connect to database: ${mongoUri}`);

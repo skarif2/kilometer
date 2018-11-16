@@ -33,43 +33,42 @@ function getSettings(req, res) {
 }
 
 function createSettings(req, res) {
-  SettingsModel.find({})
+  SettingsModel.getFirstOne()
     .then((settings) => {
-      if (settings.length > 0) {
-        return res.json({
-          status: 'error',
-          error: 'Settings already created!'
-        })
-      } else {
-        let settings = {}
-        if (req.body.vehicles && req.body.vehicles.length > 0) {
-          settings = new SettingsModel(req.body.vehicles)
-
-        } else {
-          settings = new SettingsModel({
-            vehicles: [{
-              kind: 'bike',
-              base: '50',
-              distance: 12,
-              time: 1
-            }]
-          })
-        }
-        settings.save()
-          .then((settings) => {
-            return res.json({
-              status: 'success',
-              settings
-            })
-          })
-          .catch((err) => {
-            return res.json({
-              status: 'error',
-              error: err
-            })
-          })
-      }
+      return res.json({
+        status: 'error',
+        error: 'Settings already exists!'
+      })
     })
+    .catch(() => {
+      let settings = {}
+      if (req.body.vehicles && req.body.vehicles.length > 0) {
+        settings = new SettingsModel(req.body.vehicles)
+      } else {
+        settings = new SettingsModel({
+          vehicles: [{
+            kind: 'bike',
+            base: '50',
+            distance: 12,
+            duration: 1
+          }]
+        })
+      }
+      settings.save()
+        .then((settings) => {
+          return res.json({
+            status: 'success',
+            settings
+          })
+        })
+        .catch((err) => {
+          return res.json({
+            status: 'error',
+            error: err
+          })
+        })
+    })
+    
 }
 
 function updateSettings(req, res) {
@@ -99,7 +98,7 @@ function updateSettings(req, res) {
 
 function addVehicle(req, res) {
   const settings = req.settings
-  if (req.body.kind && req.body.base && req.body.distance && req.body.time) {
+  if (req.body.kind && req.body.base && req.body.distance && req.body.duration) {
     settings.vehicles.push(req.body)
     settings.save()
       .then((savedSettings) => {
@@ -146,7 +145,6 @@ function deleteVehicle(req, res) {
     })
   }
 }
-
 
 module.exports = {
   loadSettings,

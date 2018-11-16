@@ -8,7 +8,8 @@ const SettingsSchama = new mongoose.Schema({
   vehicles: [{
     kind: {
       type: String,
-      required: true
+      required: true,
+      index: true
     },
     base: {
       type: Number,
@@ -18,7 +19,7 @@ const SettingsSchama = new mongoose.Schema({
       type: Number,
       required: true
     },
-    time: {
+    duration: {
       type: Number,
       required: true
     }
@@ -30,6 +31,17 @@ SettingsSchama.plugin(timestamps)
 SettingsSchama.statics = {
   get(id) {
     return this.findById(id)
+      .exec()
+      .then((settings) => {
+        if (settings) {
+          return settings
+        }
+        return Promise.reject('No settings exists!')
+      })
+  },
+
+  getFirstOne() {
+    return this.findOne({}, [], { $orderby : { 'created_at' : -1 } })
       .exec()
       .then((settings) => {
         if (settings) {
