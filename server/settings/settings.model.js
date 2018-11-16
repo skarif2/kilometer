@@ -9,7 +9,7 @@ const SettingsSchama = new mongoose.Schema({
     kind: {
       type: String,
       required: true,
-      index: true
+      unique: true
     },
     base: {
       type: Number,

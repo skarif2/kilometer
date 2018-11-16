@@ -10,7 +10,6 @@ const SettingsModel = require('../settings/settings.model')
 function loadTrip(req, res, next, id) {
   TripModel.get(id)
     .then((trip) => {
-      console.log('came here')
       req.trip = trip
       return next()
     })
@@ -62,16 +61,51 @@ function getEstimation(req, res) {
 }
 
 function createTrip(req, res) {
-  res.json({
-    state: 'Good Create Trip',
-    body: req.body
-  })
+  TripModel.getByDeviceId(req.body.deviceId)
+    .then(() => {
+      const trip = new TripModel(req.body)
+      trip.path.push(req.body.location)
+      return trip.save()
+    })
+    .then((trip) => {
+      res.json({
+        status: 'success',
+        trip: trip
+      })
+    })
+    .catch((err) => {
+      res.json({
+        status: 'error',
+        error: err
+      })
+    })
 }
 
 function updateTrip(req, res) {
-  res.json({
-    state: 'Good Update Trip',
-    body: req.body
+  if (req.trip.deviceId !== req.body.deviceId) {
+    return res.json({
+      status: 'error',
+      error: 'You are not supposed to update this trip!'
+    })
+  }
+  if (req.body.location && req.body.location.lat && req.body.location.lng) {
+    const trip = req.trip
+    trip.path.push(req.body.location)
+    return trip.save()
+      .then((savedTrip) => res.json({
+        status: 'success',
+        trip: savedTrip
+      }))
+      .catch((err) => {
+        res.json({
+          status: 'error',
+          error: err
+        })
+      })
+  }
+  return res.json({
+    status: 'error',
+    error: 'Nothing to update!'
   })
 }
 

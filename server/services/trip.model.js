@@ -5,14 +5,11 @@ const timestamps = require('mongoose-timestamp')
 mongoose.Promise = Promise
 
 const TripSchama = new mongoose.Schema({
-  passenger: {
-    name: {
-      type: String,
-      default: undefined
-    },
-    phone: {
-      type: String,
-      default: undefined
+  deviceId: {
+    type: String,
+    required: true,
+    index: {
+      unique: true
     }
   },
   from: {
@@ -23,10 +20,34 @@ const TripSchama = new mongoose.Schema({
     type: String,
     required: true
   },
+  vehicle: {
+    type: String,
+    required: true
+  },
+  passenger: {
+    name: {
+      type: String,
+      default: undefined
+    },
+    phone: {
+      type: String,
+      default: undefined
+    }
+  },
   startTime: {
     type: Date,
     default: Date.now
-  }
+  },
+  path: [{
+    lat: {
+      type: Number,
+      required: true
+    },
+    lng: {
+      type: Number,
+      required: true
+    }
+  }]
 })
 
 TripSchama.plugin(timestamps)
@@ -40,6 +61,17 @@ TripSchama.statics = {
           return trip
         }
         return Promise.reject('No such tirp exists!')
+      })
+  },
+
+  getByDeviceId(deviceId) {
+    return this.findOne({ deviceId })
+      .exec()
+      .then((trip) => {
+        if (trip) {
+          return Promise.reject('You are already on a trip!')
+        }
+        return true
       })
   }
 }
