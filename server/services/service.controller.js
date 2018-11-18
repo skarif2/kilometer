@@ -18,10 +18,26 @@ function loadTrip(req, res, next, id) {
 }
 
 function getState(req, res) {
-  res.json({
-    state: 'Good state',
-    query: req.query
-  })
+  TripModel.findOne({ deviceId: req.query.deviceId })
+    .then((trip) => {
+      if (trip) {
+        return res.json({
+          status: 'success',
+          state: true,
+          trip
+        })
+      }
+      return res.json({
+        status: 'success',
+        state: false
+      })
+    })
+    .catch((err) => {
+      return res.json({
+        status: 'error',
+        error: err 
+      })
+    })
 }
 
 function getEstimation(req, res) {
