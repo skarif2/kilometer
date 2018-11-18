@@ -23,13 +23,13 @@ function getState(req, res) {
       if (trip) {
         return res.json({
           status: 'success',
-          state: true,
+          ontrip: true,
           trip
         })
       }
       return res.json({
         status: 'success',
-        state: false
+        ontrip: false
       })
     })
     .catch((err) => {
