@@ -35,7 +35,7 @@ app.use(compress())
 app.use(helmet())
 app.use(cors())
 
-app.use('/kilometer/services', serviceRoutes)
-app.use('/kilometer/settings', settingRoutes)
+app.use('/services', serviceRoutes)
+app.use('/settings', settingRoutes)
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
