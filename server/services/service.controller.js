@@ -1,4 +1,5 @@
 const Promise = require('bluebird')
+const geolib = require('geolib')
 const MapsClient = require('@google/maps').createClient({
   key: 'AIzaSyDk70yhTWcTzS6Jz3kQfqBa4u3z2j-KfJM',
   Promise: Promise
@@ -110,10 +111,78 @@ function updateTrip(req, res) {
 }
 
 function endTrip(req, res) {
-  res.json({
-    state: 'Good End Trip',
-    body: req.body
-  })
+  if (req.trip.deviceId !== req.body.deviceId) {
+    return res.json({
+      status: 'error',
+      error: 'You are not supposed to end this trip!'
+    })
+  }
+  SettingsModel.getFirstOne()
+    .then((settings) => {
+      const trip = req.trip
+      trip.path.push(req.body.location)
+      const distance = parseFloat(_pathDistance(trip.path)).toFixed(2)
+      const timeDifference = (new Date("2018-11-16T08:39:24.498Z").getTime())
+        - (new Date(trip.startTime).getTime())
+      const fareSettings = settings.vehicles.find(vehicle => vehicle.kind === trip.vehicle)
+      if (fareSettings === undefined) {
+        return res.json({
+          status: 'error',
+          error: 'No vehicle found in the vehicle type!'
+        })
+      }
+      const fare = Math.round((fareSettings.base
+            + (fareSettings.distance * distance)
+            + ((fareSettings.duration / 60 / 1000) * timeDifference))
+            / 10) * 10
+
+      return res.json({
+        status: 'success',
+        vehicle: trip.vehicle,
+        distance: `${distance} km`,
+        duration: _msToTime(timeDifference),
+        fare: `${fare} Tk`
+      })
+    })
+    .catch((err) => {
+      res.json({
+        status: 'error',
+        error: err
+      })
+    })
+}
+
+function _pathDistance(path) {
+  let preLoc = undefined
+  return path.reduce((acc, nextLoc) => {
+    if (preLoc === undefined) {
+      preLoc = nextLoc
+      return 0
+    }
+    const subDistance = _getDistance(preLoc, nextLoc)
+    preLoc = nextLoc
+    return acc += subDistance
+  }, 0)
+}
+
+function _getDistance(preLoc, nextLoc) {
+  const R = 6371; // Radius of the earth in km
+  const dLat = (nextLoc.lat - preLoc.lat) * (Math.PI / 180);
+  const dLng = (nextLoc.lng - preLoc.lng) * (Math.PI / 180);
+  const a =
+    (Math.sin(dLat / 2) * Math.sin(dLat / 2)) +
+    (Math.cos(preLoc.lat * (Math.PI / 180)) *
+    Math.cos(nextLoc.lat * (Math.PI / 180)) *
+    Math.sin(dLng / 2) * Math.sin(dLng / 2));
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c; // Distance in km
+}
+
+function _msToTime(duration) {
+  let seconds = parseInt((duration/1000)%60)
+  let minutes = parseInt((duration/(1000*60))%60) + (seconds < 20 ? 0 : 1)
+  let hours = parseInt((duration/(1000*60*60))%24)
+  return hours > 0 ? `${hours}hr ${minutes}min` : `${minutes} min`
 }
 
 module.exports = {
