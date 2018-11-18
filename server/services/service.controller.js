@@ -32,12 +32,10 @@ function getState(req, res) {
         ontrip: false
       })
     })
-    .catch((err) => {
-      return res.json({
-        status: 'error',
-        error: err 
-      })
-    })
+    .catch(err => res.json({
+      status: 'error',
+      error: err 
+    }))
 }
 
 function getEstimation(req, res) {
@@ -60,6 +58,7 @@ function getEstimation(req, res) {
           / 10)* 10
       }))
       return res.json({
+        status: 'success',
         from,
         to,
         distance,
@@ -67,14 +66,10 @@ function getEstimation(req, res) {
         estimations
       })
     })
-    .catch((err) => {
-      console.log(err)
-      res.json({
-        state: 'error',
-        err
-      })
-    });
-  
+    .catch(err => res.json({
+      status: 'error',
+      error: err 
+    }))
 }
 
 function createTrip(req, res) {
@@ -84,18 +79,14 @@ function createTrip(req, res) {
       trip.path.push(req.body.location)
       return trip.save()
     })
-    .then((trip) => {
-      res.json({
-        status: 'success',
-        trip: trip
-      })
-    })
-    .catch((err) => {
-      res.json({
-        status: 'error',
-        error: err
-      })
-    })
+    .then(trip => res.json({
+      status: 'success',
+      trip: trip
+    }))
+    .catch(err => res.json({
+      status: 'error',
+      error: err
+    }))
 }
 
 function updateTrip(req, res) {
@@ -113,12 +104,10 @@ function updateTrip(req, res) {
         status: 'success',
         trip: savedTrip
       }))
-      .catch((err) => {
-        res.json({
-          status: 'error',
-          error: err
-        })
-      })
+      .catch(err => res.json({
+        status: 'error',
+        error: err 
+      }))
   }
   return res.json({
     status: 'error',
@@ -138,8 +127,7 @@ function endTrip(req, res) {
       const trip = req.trip
       trip.path.push(req.body.location)
       const distance = parseFloat(_pathDistance(trip.path)).toFixed(2)
-      const timeDifference = (new Date("2018-11-16T08:39:24.498Z").getTime())
-        - (new Date(trip.startTime).getTime())
+      const timeDifference = (new Date().getTime()) - (new Date(trip.startTime).getTime())
       const fareSettings = settings.vehicles.find(vehicle => vehicle.kind === trip.vehicle)
       if (fareSettings === undefined) {
         return res.json({
@@ -147,6 +135,7 @@ function endTrip(req, res) {
           error: 'No vehicle found in the vehicle type!'
         })
       }
+      console.log('came here')
       const fare = Math.round((fareSettings.base
             + (fareSettings.distance * distance)
             + ((fareSettings.duration / 60 / 1000) * timeDifference))
@@ -176,12 +165,10 @@ function endTrip(req, res) {
           })
         })
     })
-    .catch((err) => {
-      res.json({
-        status: 'error',
-        error: err
-      })
-    })
+    .catch(err => res.json({
+      status: 'error',
+      error: err 
+    }))
 }
 
 function _pathDistance(path) {
