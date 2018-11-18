@@ -7,9 +7,11 @@ const mongoose = require('mongoose')
 const serviceRoutes = require('./server/services/service.route')
 const settingRoutes = require('./server/settings/settings.route')
 
+require('dotenv').config()
+
 const app = express()
-const port = 3000
-const mongoUri = 'mongodb://localhost/kilometer'
+const port = process.env.PORT
+const mongoUri = process.env.MONGO_URI
 
 mongoose.set('useCreateIndex', true)
 mongoose.connect(mongoUri, { server: { socketOptions: { keepAlive: 1 } } });
