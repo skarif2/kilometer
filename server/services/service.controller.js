@@ -135,14 +135,30 @@ function endTrip(req, res) {
             + (fareSettings.distance * distance)
             + ((fareSettings.duration / 60 / 1000) * timeDifference))
             / 10) * 10
-
-      return res.json({
-        status: 'success',
+      const successTrip = new SuccessTripModel({
+        deviceId: trip.deviceId,
+        from: trip.from,
+        to: trip.to,
         vehicle: trip.vehicle,
+        passenger: trip.passenger,
+        startTime: trip.startTime,
+        endTime: new Date(),
+        path: trip.path,
         distance: `${distance} km`,
         duration: _msToTime(timeDifference),
         fare: `${fare} Tk`
       })
+      successTrip.save()
+        .then(() => trip.remove())
+        .then(() => {
+          return res.json({
+            status: 'success',
+            vehicle: successTrip.vehicle,
+            distance: successTrip.distance,
+            duration: successTrip.duration,
+            fare: successTrip.fare
+          })
+        })
     })
     .catch((err) => {
       res.json({

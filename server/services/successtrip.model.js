@@ -7,10 +7,7 @@ mongoose.Promise = Promise
 const SuccessTripSchama = new mongoose.Schema({
   deviceId: {
     type: String,
-    required: true,
-    index: {
-      unique: true
-    }
+    required: true
   },
   from: {
     type: String,
@@ -38,7 +35,15 @@ const SuccessTripSchama = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
+  endTime: {
+    type: Date,
+    default: Date.now
+  },
   path: [{
+    _id: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true
+    },
     lat: {
       type: Number,
       required: true
@@ -47,7 +52,19 @@ const SuccessTripSchama = new mongoose.Schema({
       type: Number,
       required: true
     }
-  }]
+  }],
+  distance: {
+    type: String,
+    required: true
+  },
+  duration: {
+    type: String,
+    required: true
+  },
+  fare: {
+    type: String,
+    required: true
+  }
 })
 
 SuccessTripSchama.plugin(timestamps)
@@ -60,20 +77,9 @@ SuccessTripSchama.statics = {
         if (trip) {
           return trip
         }
-        return Promise.reject('No such tirp exists!')
+        return Promise.reject('No such success tirp exists!')
       })
   },
-
-  getByDeviceId(deviceId) {
-    return this.findOne({ deviceId })
-      .exec()
-      .then((trip) => {
-        if (trip) {
-          return Promise.reject('You are already on a trip!')
-        }
-        return true
-      })
-  }
 }
 
 module.exports = mongoose.model('SuccessTrip', SuccessTripSchama)
